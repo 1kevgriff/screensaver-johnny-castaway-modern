@@ -1,0 +1,8 @@
+# .NET build output
+[Bb]in/
+[Oo]bj/
+*.user
+
+# Generated content bundle + assets (derived from the original game; not distributed)
+content/
+extracted/

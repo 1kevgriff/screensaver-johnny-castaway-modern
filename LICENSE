@@ -1,0 +1,24 @@
+Screen Antics: Johnny Castaway — Modern
+Copyright (C) 2026 Kevin Griffin
+
+This program is free software: you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the Free Software Foundation,
+either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+The full text of the GNU General Public License version 3 is available at:
+https://www.gnu.org/licenses/gpl-3.0.txt
+(Add the full GPLv3 text to this file before distributing binaries.)
+
+----------------------------------------------------------------------------------
+This work is a derivative of the ScummVM "dgds" engine
+(https://github.com/scummvm/scummvm, GPLv3): the DGDS resource-format decoders and
+the TTM/ADS script-interpreter logic were ported from it. ScummVM is the legal
+property of its developers. This project is therefore licensed under GPLv3.
+
+The original "Screen Antics: Johnny Castaway" game and its assets are
+© 1992 Sierra On-Line / Dynamix. This is an unaffiliated, non-commercial
+fan reimplementation; no original game assets are included in this repository.
