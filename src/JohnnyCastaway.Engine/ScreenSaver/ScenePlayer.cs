@@ -34,6 +34,8 @@ public sealed class ScenePlayer
 
     public SKImage ImageAt(long elapsedMs) => _frames[IndexAt(elapsedMs)].Image;
 
+    public IReadOnlyList<int> FrameSounds(int index) => _frames[index].Sounds;
+
     public void DisposeFrames()
     {
         foreach (var f in _frames) f.Image.Dispose();

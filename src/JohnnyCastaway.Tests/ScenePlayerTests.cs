@@ -10,7 +10,7 @@ public class ScenePlayerTests
     static RenderedFrame F(int ticks)
     {
         using var s = SKSurface.Create(new SKImageInfo(2, 2));
-        return new RenderedFrame(s.Snapshot(), ticks);
+        return new RenderedFrame(s.Snapshot(), ticks, Array.Empty<int>());
     }
 
     [Fact]

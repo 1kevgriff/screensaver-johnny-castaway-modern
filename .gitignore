@@ -6,3 +6,6 @@
 # Generated content bundle + assets (derived from the original game; not distributed)
 content/
 extracted/
+
+# Installer build output (published .scr + bundled content)
+installer/dist/

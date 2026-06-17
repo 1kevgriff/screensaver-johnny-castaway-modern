@@ -15,31 +15,13 @@ public sealed class TtmClipRenderer(ContentBundle bundle, IAssetStore assets) : 
 
 public static class VignetteSource
 {
-    /// <summary>Render a TTM sequence to a looping ScenePlayer using the up-res'd assets.</summary>
-    public static ScenePlayer Load(string repoRoot, string ttm, string seq, int scale)
-    {
-        string contentDir = Path.Combine(repoRoot, "content");
-        var bundle = ContentBundle.Load(contentDir);
-        var native = LoadNativeBackgroundSizes(Path.Combine(contentDir, "manifest.json"));
-        string assetsRoot = scale == 4
-            ? Path.Combine(repoRoot, "extracted", "upscaled")
-            : Path.Combine(repoRoot, "extracted", "png");
-        var store = new FileAssetStore(assetsRoot, assetsRoot, scale, native);
-        var vm = new TtmVm(store);
-        var frames = vm.RenderSequence(bundle.Ttm[ttm.ToUpperInvariant()], seq);
-        return new ScenePlayer(frames);
-    }
-
     /// <summary>Plan and render an ADS segment into a looping ScenePlayer.</summary>
-    public static ScenePlayer LoadAds(string repoRoot, string adsName, int segmentIndex, int scale, int seed)
+    public static ScenePlayer LoadAds(string contentDir, string adsName, int segmentIndex, int scale, int seed)
     {
-        string contentDir = Path.Combine(repoRoot, "content");
         var bundle = ContentBundle.Load(contentDir);
         var native = LoadNativeBackgroundSizes(Path.Combine(contentDir, "manifest.json"));
-        string assetsRoot = scale == 4
-            ? Path.Combine(repoRoot, "extracted", "upscaled")
-            : Path.Combine(repoRoot, "extracted", "png");
-        var store = new FileAssetStore(assetsRoot, assetsRoot, scale, native);
+        var (sprites, backgrounds, _) = ContentLocator.Roots(contentDir);
+        var store = new FileAssetStore(sprites, backgrounds, scale, native);
         return BuildAdsPlayer(bundle, store, adsName, segmentIndex, seed);
     }
 
@@ -47,15 +29,12 @@ public static class VignetteSource
     /// Returns a thunk that each call picks a time-appropriate vignette via DayClock+Scheduler
     /// and renders it into a fresh ScenePlayer. ContentBundle and assets are loaded once.
     /// </summary>
-    public static Func<ScenePlayer> CreateScheduledProvider(string repoRoot, int scale, int startOfDayHHMM, int seed)
+    public static Func<ScenePlayer> CreateScheduledProvider(string contentDir, int scale, int startOfDayHHMM, int seed)
     {
-        string contentDir = Path.Combine(repoRoot, "content");
         var bundle = ContentBundle.Load(contentDir);
         var native = LoadNativeBackgroundSizes(Path.Combine(contentDir, "manifest.json"));
-        string assetsRoot = scale == 4
-            ? Path.Combine(repoRoot, "extracted", "upscaled")
-            : Path.Combine(repoRoot, "extracted", "png");
-        var store = new FileAssetStore(assetsRoot, assetsRoot, scale, native);
+        var (sprites, backgrounds, _) = ContentLocator.Roots(contentDir);
+        var store = new FileAssetStore(sprites, backgrounds, scale, native);
         var counts = bundle.Ads.ToDictionary(kv => kv.Key, kv => kv.Value.Segments.Count);
         var clock = new DayClock(TimeProvider.System, startOfDayHHMM);
         var scheduler = new Scheduler(counts, new Random(seed));

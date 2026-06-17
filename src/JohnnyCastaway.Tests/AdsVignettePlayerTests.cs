@@ -14,7 +14,7 @@ public class AdsVignettePlayerTests
         public IReadOnlyList<RenderedFrame> Render(string ttm, int seq)
         {
             using var s = SKSurface.Create(new SKImageInfo(2, 2));
-            return new[] { new RenderedFrame(s.Snapshot(), 2), new RenderedFrame(s.Snapshot(), 3) };
+            return new[] { new RenderedFrame(s.Snapshot(), 2, Array.Empty<int>()), new RenderedFrame(s.Snapshot(), 3, Array.Empty<int>()) };
         }
     }
 

@@ -12,13 +12,16 @@ public sealed class SaverForm : Form
     private Point? _lastMouse;
     private SKImage? _lastSkImage;
     private Bitmap? _current;
+    private readonly IAudioPlayer _audio;
+    private int _lastFrameIndex = -1;
 
     // Convenience overload: wraps a single player in a constant provider.
     public SaverForm(ScenePlayer player, bool exitOnInput) : this(() => player, exitOnInput) { }
 
-    public SaverForm(Func<ScenePlayer> nextVignette, bool exitOnInput)
+    public SaverForm(Func<ScenePlayer> nextVignette, bool exitOnInput, IAudioPlayer? audio = null)
     {
         _next = nextVignette;
+        _audio = audio ?? new NullAudioPlayer();
         _player = _next();
         _startTicks = Environment.TickCount64;
         _exitOnInput = exitOnInput;
@@ -64,9 +67,19 @@ public sealed class SaverForm : Form
             _player = _next();
             _startTicks = Environment.TickCount64;
             elapsed = 0;
+            // Reset frame tracking on vignette swap
+            _lastFrameIndex = -1;
 
             if (!ReferenceEquals(_player, old))
                 old.DisposeFrames();
+        }
+
+        int idx = _player.IndexAt(elapsed);
+        if (idx != _lastFrameIndex)
+        {
+            foreach (var id in _player.FrameSounds(idx))
+                _audio.Play(id);
+            _lastFrameIndex = idx;
         }
 
         var skImg = _player.ImageAt(elapsed);

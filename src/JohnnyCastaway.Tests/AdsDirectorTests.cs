@@ -15,7 +15,7 @@ public class AdsDirectorTests
         {
             Calls.Add((ttm, seq));
             using var s = SKSurface.Create(new SKImageInfo(2, 2));
-            return new[] { new RenderedFrame(s.Snapshot(), 1) };
+            return new[] { new RenderedFrame(s.Snapshot(), 1, Array.Empty<int>()) };
         }
     }
 

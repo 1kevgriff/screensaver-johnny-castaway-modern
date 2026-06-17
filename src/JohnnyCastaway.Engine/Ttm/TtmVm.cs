@@ -14,6 +14,7 @@ public sealed class TtmVm(IAssetStore assets, int seed = 1234)
     private SKImage? _bg;
     private SKSurface _fb = null!;
     private readonly List<RenderedFrame> _frames = new();
+    private readonly List<int> _pendingSounds = new();
     private int S => assets.Scale;
 
     private void NewFb()
@@ -46,6 +47,7 @@ public sealed class TtmVm(IAssetStore assets, int seed = 1234)
     public IReadOnlyList<RenderedFrame> RunInstructions(IEnumerable<Instr> loadPass, IEnumerable<Instr> body)
     {
         _frames.Clear();
+        _pendingSounds.Clear();
         NewFb();
         foreach (var i in loadPass) Exec(i, loadOnly: true);
         if (_bg is not null) NewFb();
@@ -68,6 +70,7 @@ public sealed class TtmVm(IAssetStore assets, int seed = 1234)
         if (loadOnly) return;                  // below = draw/timing, skipped in pre-pass
         switch (i.Op)
         {
+            case "PLAY_SAMPLE" when i.Args.Length > 0: _pendingSounds.Add(i.Args[0]); break;
             case "SET_DELAY" when i.Args.Length > 0: _delay = Math.Max(1, i.Args[0]); break;
             case "SET_RANDOM_DELAY" when i.Args.Length >= 2:
                 int lo = Math.Min(i.Args[0], i.Args[1]), hi = Math.Max(i.Args[0], i.Args[1]);
@@ -78,7 +81,9 @@ public sealed class TtmVm(IAssetStore assets, int seed = 1234)
             case "DRAW_BMP" or "DRAW_SPRITE_FLIPV" or "DRAW_SPRITE_FLIPH" or "DRAW_SPRITE_FLIPHV":
                 DrawSprite(i); break;
             case "FINISH_FRAME":
-                _frames.Add(new RenderedFrame(_fb.Snapshot(), _delay)); break;
+                _frames.Add(new RenderedFrame(_fb.Snapshot(), _delay, _pendingSounds.ToArray()));
+                _pendingSounds.Clear();
+                break;
         }
     }
 

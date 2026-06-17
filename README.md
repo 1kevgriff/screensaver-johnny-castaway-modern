@@ -10,25 +10,19 @@ modern resolutions.
 > day he fishes, builds sandcastles, gets visited, dreams, and (rarely) finds a message in a
 > bottle — the "world's first story-telling screen saver."
 
-## Status
+## Features
 
-Work in progress. Implemented so far:
-
-- ✅ **Content pipeline** — the original game's decoded animation (TTM) and scene-director
-  (ADS) scripts serialized to a clean JSON bundle.
-- ✅ **TTM virtual machine** — a faithful animation-bytecode interpreter (sprite compositing,
-  GETPUT save-under, delays, sequence chaining) rendered with SkiaSharp.
-- ✅ **ADS director** — sequences vignettes with conditionals, weighted randomness, and
-  chaining (walk → cast → reel → catch …), so gags play coherently and never the same way
-  twice.
-- ✅ **Day clock + scheduler** — a 16-"hour" in-game day driven by your local clock and a
-  configurable start-of-day, selecting time-appropriate vignettes (fishing by day, sleeping
-  by night, …).
-- ✅ **Screensaver shell** — a borderless full-screen `/s` host with exit-on-input and `/p`
-  preview, scaling the art to any monitor.
-
-Planned next: sound effects, a settings dialog, multi-monitor, and a packaged installer that
-registers `JohnnyCastaway.scr` into Windows Screen Saver settings.
+- **Faithful engine** — a TTM animation-bytecode virtual machine (sprite compositing, save-under,
+  delays) and an ADS scene-director (conditionals, weighted randomness, sequence chaining) that
+  reproduce the original gags (walk → cast → reel → catch …) — never the same way twice.
+- **A simulated day** — a 16-"hour" in-game clock driven by your local time and a configurable
+  start-of-day, choosing time-appropriate vignettes (fishing by day, sleeping by night) with
+  seasonal awareness.
+- **Up-res'd art** — sprites and backgrounds upscaled 4× (Real-ESRGAN) and scaled to any monitor.
+- **Sound** — the original sound effects, triggered in sync by the animation scripts (off by default).
+- **A real screensaver** — borderless full-screen `/s`, `/p` preview, a `/c` settings dialog
+  (start-of-day, sound), **multi-monitor**, and a one-command installer that registers
+  `JohnnyCastaway.scr` into Windows Screen Saver settings.
 
 ## Architecture
 
@@ -36,20 +30,30 @@ registers `JohnnyCastaway.scr` into Windows Screen Saver settings.
 content bundle (scripts.json + 4× art + audio)        ← generated from original game data
         │
    DayClock → Scheduler → AdsDirector → TtmVm → SkiaSharp renderer → screen
+                                          └→ NAudio (sound effects)
 ```
 
-- `JohnnyCastaway.Engine` — the runtime: content bundle loader, `TtmVm`, `AdsDirector`,
-  `DayClock`, `Scheduler`, `ScenePlayer`.
-- `JohnnyCastaway.ScreenSaver` — the WinForms `.scr` host.
+- `JohnnyCastaway.Engine` — runtime: content loader, `TtmVm`, `AdsDirector`, `DayClock`,
+  `Scheduler`, `ScenePlayer`, `ContentLocator`, settings + audio interfaces.
+- `JohnnyCastaway.ScreenSaver` — the WinForms `.scr` host (rendering, settings dialog, audio,
+  multi-monitor).
 - `JohnnyCastaway.Cli` — a headless renderer (`--render <TTM> <seq> out.png`) for testing.
-- `JohnnyCastaway.Tests` — xUnit.
+- `JohnnyCastaway.Tests` — xUnit (54 tests).
 
-## Building
+## Building & running
 
 ```
 dotnet build
 dotnet test
-dotnet run --project src/JohnnyCastaway.ScreenSaver -- /s   # run the screensaver
+dotnet run --project src/JohnnyCastaway.ScreenSaver -- /s   # run the screensaver (needs content/, below)
+```
+
+Install as a real screensaver (see `installer/`):
+
+```powershell
+installer\build.ps1      # publish a self-contained JohnnyCastaway.scr + bundle content
+installer\install.ps1    # copy to %LOCALAPPDATA%\JohnnyCastaway and register it
+installer\uninstall.ps1  # remove and unregister
 ```
 
 Requires the .NET 10 SDK.
@@ -58,9 +62,12 @@ Requires the .NET 10 SDK.
 
 This repository contains **source code only**. It does **not** include the game's graphics,
 sounds, or scripts — those are © 1992 Sierra On-Line / Dynamix. To run it you must supply a
-content bundle generated from your own copy of the original *Johnny Castaway* data
-(`RESOURCE.001` / `RESOURCE.MAP`). The runtime reads `content/scripts.json` + `manifest.json`
-and the art/audio referenced therein.
+`content/` bundle generated from your own copy of the original *Johnny Castaway* data
+(`RESOURCE.001` / `RESOURCE.MAP`): `content/scripts.json`, `content/manifest.json`, and the
+art/audio under `content/sprites`, `content/backgrounds`, `content/audio`. The runtime locates
+this bundle next to the installed `.scr` (or in the repo root during development). The tooling
+that decodes the original game into this bundle is not distributed (it derives from GPL ScummVM
+and would embed copyrighted assets).
 
 ## Credits & license
 
